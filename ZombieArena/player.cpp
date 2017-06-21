@@ -98,5 +98,3 @@ void Player::increaseHealthLevel(int amount) {
 
 	if (m_health > m_maxHealth) { m_health = m_maxHealth; }
 }
-
-Player::~Player() {}
