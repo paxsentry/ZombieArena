@@ -50,43 +50,43 @@ int main()
 
 				}
 			}
+		}
 
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { window.close(); }
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { window.close(); }
+
+		if (currentState == State::PLAYING) {
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { player.moveUp(); }
+			else { player.stopUp(); }
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) { player.moveDown(); }
+			else { player.stopDown(); }
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { player.moveLeft(); }
+			else { player.stopLeft(); }
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { player.moveRight(); }
+			else { player.stopRight(); }
+		}
+
+		if (currentState == State::LEVELING_UP) {
+			if (event.key.code == sf::Keyboard::Num1) { currentState = State::PLAYING; }
+			if (event.key.code == sf::Keyboard::Num2) { currentState = State::PLAYING; }
+			if (event.key.code == sf::Keyboard::Num3) { currentState = State::PLAYING; }
+			if (event.key.code == sf::Keyboard::Num4) { currentState = State::PLAYING; }
+			if (event.key.code == sf::Keyboard::Num5) { currentState = State::PLAYING; }
+			if (event.key.code == sf::Keyboard::Num6) { currentState = State::PLAYING; }
 
 			if (currentState == State::PLAYING) {
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { player.moveUp(); }
-				else { player.stopUp(); }
+				arena.width = 500;
+				arena.height = 500;
+				arena.left = 0;
+				arena.top = 0;
 
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) { player.moveDown(); }
-				else { player.stopDown(); }
+				int tileSize = 50;
 
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { player.moveLeft(); }
-				else { player.stopLeft(); }
+				player.spawn(arena, resolution, tileSize);
 
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { player.moveRight(); }
-				else { player.stopRight(); }
-			}
-
-			if (currentState == State::LEVELING_UP) {
-				if (event.key.code == sf::Keyboard::Num1) { currentState = State::PLAYING; }
-				if (event.key.code == sf::Keyboard::Num2) { currentState = State::PLAYING; }
-				if (event.key.code == sf::Keyboard::Num3) { currentState = State::PLAYING; }
-				if (event.key.code == sf::Keyboard::Num4) { currentState = State::PLAYING; }
-				if (event.key.code == sf::Keyboard::Num5) { currentState = State::PLAYING; }
-				if (event.key.code == sf::Keyboard::Num6) { currentState = State::PLAYING; }
-
-				if (currentState == State::PLAYING) {
-					arena.width = 500;
-					arena.height = 500;
-					arena.left = 0;
-					arena.top = 0;
-
-					int tileSize = 50;
-
-					player.spawn(arena, resolution, tileSize);
-
-					clock.restart();
-				}
+				clock.restart();
 			}
 		}
 
@@ -119,7 +119,6 @@ int main()
 		if (currentState == State::GAME_OVER) {}
 
 		window.display();
-
 	}
 
 	return 0;
