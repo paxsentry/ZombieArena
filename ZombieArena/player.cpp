@@ -1,14 +1,13 @@
 #include "player.h"
+#include "TextureHolder.h"
 
 Player::Player()
 	:m_speed(START_SPEED),
 	m_health(START_HEALTH),
 	m_maxHealth(START_HEALTH)
 {
-	if (m_texture.loadFromFile("graphics/player.png")) {
-		m_sprite.setTexture(m_texture);
-		m_sprite.setOrigin(25, 25);
-	}
+	m_sprite = sf::Sprite(TextureHolder::getTexture("graphics/player.png"));
+	m_sprite.setOrigin(25, 25);
 }
 
 void Player::spawn(sf::IntRect arena, sf::Vector2f resolution, int tileSize)

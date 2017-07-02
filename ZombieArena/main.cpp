@@ -2,6 +2,7 @@
 #include "player.h"
 #include "arena.h"
 #include "TextureHolder.h"
+#include "bullet.h"
 
 int main()
 {
@@ -33,13 +34,27 @@ int main()
 	sf::IntRect arena;
 
 	sf::VertexArray background;
-	sf::Texture textureBackground;
-	textureBackground.loadFromFile("graphics/background_sheet.png");
+	sf::Texture textureBackground = TextureHolder::getTexture("graphics/background_sheet.png");
 
 	int numZombies;
 	int numZombiesAlive;
 
 	Zombie* zombies = nullptr;
+
+	Bullet bullets[100];
+	int currentBullet = 0;
+	int bulletsSpare = 24;
+	int bulletsInClip = 6;
+	int clipSize = 6;
+	float fireRate = 1;
+
+	sf::Time lastPressed;
+
+	window.setMouseCursorVisible(false);
+	sf::Sprite spriteCrosshair;
+	sf::Texture textureCrossHair = TextureHolder::getTexture("graphics/crosshair.png");
+	spriteCrosshair.setTexture(textureCrossHair);
+	spriteCrosshair.setOrigin(25, 25);
 
 	while (window.isOpen())
 	{
@@ -60,14 +75,26 @@ int main()
 				}
 
 				if (currentState == State::PLAYING) {
+					if (event.key.code == sf::Keyboard::R) {
+						if (bulletsSpare >= clipSize) {
+							bulletsInClip = clipSize;
+							bulletsSpare -= clipSize;
+						}
+						else if (bulletsSpare > 0) {
+							bulletsInClip = bulletsSpare;
+							bulletsSpare = 0;
+						}
+						else {
 
+						}
+					}
 				}
 			}
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { window.close(); }
 
-		if (currentState == State::PLAYING) {
+		if (currentState == State::PLAYING) { // Controls
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { player.moveUp(); }
 			else { player.stopUp(); }
 
@@ -79,6 +106,19 @@ int main()
 
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { player.moveRight(); }
 			else { player.stopRight(); }
+
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+				if (gameTimeTotal.asMilliseconds() - lastPressed.asMilliseconds() > 1000 / fireRate && bulletsInClip > 0) {
+					bullets[currentBullet].shoot(player.getCenter().x, player.getCenter().y, mouseWorldPosition.x, mouseWorldPosition.y);
+
+					currentBullet++;
+
+					if (currentBullet > 99) { currentBullet = 0; }
+					lastPressed = gameTimeTotal;
+
+					bulletsInClip--;
+				}
+			}
 		}
 
 		if (currentState == State::LEVELING_UP) {
@@ -90,8 +130,8 @@ int main()
 			if (event.key.code == sf::Keyboard::Num6) { currentState = State::PLAYING; }
 
 			if (currentState == State::PLAYING) {
-				arena.width = 500;
-				arena.height = 500;
+				arena.width = 1000;
+				arena.height = 750;
 				arena.left = 0;
 				arena.top = 0;
 
@@ -109,7 +149,7 @@ int main()
 			}
 		}
 
-		if (currentState == State::PLAYING) {
+		if (currentState == State::PLAYING) { // Update the frame
 			sf::Time delta = clock.restart();
 
 			gameTimeTotal += delta;
@@ -130,9 +170,14 @@ int main()
 					zombies[i].update(delta.asSeconds(), playerPosition);
 				}
 			}
+
+			for (int i = 0; i < 100; i++)
+			{
+				if (bullets[i].isInFlight()) { bullets[i].update(deltaAsSeconds); }
+			}
 		}
 
-		if (currentState == State::PLAYING) {
+		if (currentState == State::PLAYING) { // Drawing
 			window.clear();
 
 			window.setView(mainView);
@@ -142,6 +187,11 @@ int main()
 			for (int i = 0; i < numZombies; i++)
 			{
 				window.draw(zombies[i].getSprite());
+			}
+
+			for (int i = 0; i < 100; i++)
+			{
+				if (bullets[i].isInFlight()) { window.draw(bullets[i].getShape()); }
 			}
 
 			window.draw(player.getSprite());
