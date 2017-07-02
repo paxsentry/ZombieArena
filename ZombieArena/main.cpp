@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <sstream>
 #include <fstream>
 #include "player.h"
@@ -158,6 +159,41 @@ int main()
    int frameSinceLastHudUpdate = 0;
    int fpsMeasurementFrameInterval = 1000;
 
+   sf::SoundBuffer sbHit;
+   sbHit.loadFromFile("sound/hit.wav");
+   sf::Sound hit;
+   hit.setBuffer(sbHit);
+
+   sf::SoundBuffer sbSplat;
+   sbSplat.loadFromFile("sound/splat.wav");
+   sf::Sound splat;
+   splat.setBuffer(sbSplat);
+
+   sf::SoundBuffer sbShoot;
+   sbShoot.loadFromFile("sound/shoot.wav");
+   sf::Sound shoot;
+   shoot.setBuffer(sbShoot);
+
+   sf::SoundBuffer sbReload;
+   sbReload.loadFromFile("sound/reload.wav");
+   sf::Sound reload;
+   reload.setBuffer(sbReload);
+
+   sf::SoundBuffer sbReloadFailed;
+   sbReloadFailed.loadFromFile("sound/reload_failed.wav");
+   sf::Sound reloadFail;
+   reloadFail.setBuffer(sbReloadFailed);
+
+   sf::SoundBuffer sbPowerup;
+   sbPowerup.loadFromFile("sound/powerup.wav");
+   sf::Sound powerup;
+   powerup.setBuffer(sbPowerup);
+
+   sf::SoundBuffer sbPickup;
+   sbPickup.loadFromFile("sound/pickup.wav");
+   sf::Sound pickup;
+   pickup.setBuffer(sbPickup);
+
    while (window.isOpen())
    {
       sf::Event event;
@@ -224,16 +260,18 @@ int main()
       }
 
       if (currentState == State::LEVELING_UP) {
-         if (event.key.code == sf::Keyboard::Num1) { currentState = State::PLAYING; }
-         if (event.key.code == sf::Keyboard::Num2) { currentState = State::PLAYING; }
-         if (event.key.code == sf::Keyboard::Num3) { currentState = State::PLAYING; }
-         if (event.key.code == sf::Keyboard::Num4) { currentState = State::PLAYING; }
-         if (event.key.code == sf::Keyboard::Num5) { currentState = State::PLAYING; }
-         if (event.key.code == sf::Keyboard::Num6) { currentState = State::PLAYING; }
+         if (event.key.code == sf::Keyboard::Num1) { fireRate++; currentState = State::PLAYING; }
+         if (event.key.code == sf::Keyboard::Num2) { clipSize += clipSize; currentState = State::PLAYING; }
+         if (event.key.code == sf::Keyboard::Num3) { player.upgradeHealth(); currentState = State::PLAYING; }
+         if (event.key.code == sf::Keyboard::Num4) { player.upgradeSpeed(); currentState = State::PLAYING; }
+         if (event.key.code == sf::Keyboard::Num5) { healthPickup.upgrade(); currentState = State::PLAYING; }
+         if (event.key.code == sf::Keyboard::Num6) { ammoPickup.upgrade(); currentState = State::PLAYING; }
 
          if (currentState == State::PLAYING) {
-            arena.width = 700;
-            arena.height = 700;
+            wave++;
+
+            arena.width = 500 * wave;
+            arena.height = 500 * wave;
             arena.left = 0;
             arena.top = 0;
 
@@ -244,11 +282,13 @@ int main()
             healthPickup.setArena(arena);
             ammoPickup.setArena(arena);
 
-            numZombies = 10;
+            numZombies = 5 * wave;
 
             delete[] zombies;
             zombies = createHorde(numZombies, arena);
             numZombiesAlive = numZombies;
+
+            powerup.play();
 
             clock.restart();
          }
