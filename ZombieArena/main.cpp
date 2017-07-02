@@ -3,208 +3,225 @@
 #include "arena.h"
 #include "TextureHolder.h"
 #include "bullet.h"
+#include "pickup.h"
 
 int main()
 {
-	TextureHolder holder;
+   TextureHolder holder;
 
-	enum class State {
-		PAUSED, LEVELING_UP, GAME_OVER, PLAYING
-	};
+   enum class State {
+      PAUSED, LEVELING_UP, GAME_OVER, PLAYING
+   };
 
-	State currentState = State::GAME_OVER;
+   State currentState = State::GAME_OVER;
 
-	sf::Vector2f resolution;
-	resolution.x = sf::VideoMode::getDesktopMode().width;
-	resolution.y = sf::VideoMode::getDesktopMode().height;
+   sf::Vector2f resolution;
+   resolution.x = sf::VideoMode::getDesktopMode().width;
+   resolution.y = sf::VideoMode::getDesktopMode().height;
 
-	sf::RenderWindow window(sf::VideoMode(resolution.x, resolution.y), "Zombie Arena", sf::Style::Fullscreen);
+   sf::RenderWindow window(sf::VideoMode(resolution.x, resolution.y), "Zombie Arena", sf::Style::Fullscreen);
 
-	sf::View mainView(sf::FloatRect(0, 0, resolution.x, resolution.y));
+   sf::View mainView(sf::FloatRect(0, 0, resolution.x, resolution.y));
 
-	sf::Clock clock;
+   sf::Clock clock;
 
-	sf::Time  gameTimeTotal;
+   sf::Time  gameTimeTotal;
 
-	sf::Vector2f mouseWorldPosition;
-	sf::Vector2i mouseScreenPosition;
+   sf::Vector2f mouseWorldPosition;
+   sf::Vector2i mouseScreenPosition;
 
-	Player player;
+   Player player;
 
-	sf::IntRect arena;
+   sf::IntRect arena;
 
-	sf::VertexArray background;
-	sf::Texture textureBackground = TextureHolder::getTexture("graphics/background_sheet.png");
+   sf::VertexArray background;
+   sf::Texture textureBackground = TextureHolder::getTexture("graphics/background_sheet.png");
 
-	int numZombies;
-	int numZombiesAlive;
+   int numZombies;
+   int numZombiesAlive;
 
-	Zombie* zombies = nullptr;
+   Zombie* zombies = nullptr;
 
-	Bullet bullets[100];
-	int currentBullet = 0;
-	int bulletsSpare = 24;
-	int bulletsInClip = 6;
-	int clipSize = 6;
-	float fireRate = 1;
+   Bullet bullets[100];
+   int currentBullet = 0;
+   int bulletsSpare = 24;
+   int bulletsInClip = 6;
+   int clipSize = 6;
+   float fireRate = 1;
 
-	sf::Time lastPressed;
+   sf::Time lastPressed;
 
-	window.setMouseCursorVisible(false);
-	sf::Sprite spriteCrosshair;
-	sf::Texture textureCrossHair = TextureHolder::getTexture("graphics/crosshair.png");
-	spriteCrosshair.setTexture(textureCrossHair);
-	spriteCrosshair.setOrigin(25, 25);
+   window.setMouseCursorVisible(false);
+   sf::Sprite spriteCrosshair;
+   sf::Texture textureCrossHair = TextureHolder::getTexture("graphics/crosshair.png");
+   spriteCrosshair.setTexture(textureCrossHair);
+   spriteCrosshair.setOrigin(25, 25);
 
-	while (window.isOpen())
-	{
-		sf::Event event;
+   Pickup healthPickup(1);
+   Pickup ammoPickup(2);
 
-		while (window.pollEvent(event))
-		{
-			if (event.type == sf::Event::KeyPressed) {
-				if (event.key.code == sf::Keyboard::Return && currentState == State::PLAYING) {
-					currentState = State::PAUSED;
-				}
-				else if (event.key.code == sf::Keyboard::Return && currentState == State::PAUSED) {
-					currentState = State::PLAYING;
-					clock.restart();
-				}
-				else if (event.key.code == sf::Keyboard::Return && currentState == State::GAME_OVER) {
-					currentState = State::LEVELING_UP;
-				}
+   while (window.isOpen())
+   {
+      sf::Event event;
 
-				if (currentState == State::PLAYING) {
-					if (event.key.code == sf::Keyboard::R) {
-						if (bulletsSpare >= clipSize) {
-							bulletsInClip = clipSize;
-							bulletsSpare -= clipSize;
-						}
-						else if (bulletsSpare > 0) {
-							bulletsInClip = bulletsSpare;
-							bulletsSpare = 0;
-						}
-						else {
+      while (window.pollEvent(event))
+      {
+         if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::Return && currentState == State::PLAYING) {
+               currentState = State::PAUSED;
+            }
+            else if (event.key.code == sf::Keyboard::Return && currentState == State::PAUSED) {
+               currentState = State::PLAYING;
+               clock.restart();
+            }
+            else if (event.key.code == sf::Keyboard::Return && currentState == State::GAME_OVER) {
+               currentState = State::LEVELING_UP;
+            }
 
-						}
-					}
-				}
-			}
-		}
+            if (currentState == State::PLAYING) {
+               if (event.key.code == sf::Keyboard::R) {
+                  if (bulletsSpare >= clipSize) {
+                     bulletsInClip = clipSize;
+                     bulletsSpare -= clipSize;
+                  }
+                  else if (bulletsSpare > 0) {
+                     bulletsInClip = bulletsSpare;
+                     bulletsSpare = 0;
+                  }
+                  else {
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { window.close(); }
+                  }
+               }
+            }
+         }
+      }
 
-		if (currentState == State::PLAYING) { // Controls
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { player.moveUp(); }
-			else { player.stopUp(); }
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { window.close(); }
 
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) { player.moveDown(); }
-			else { player.stopDown(); }
+      if (currentState == State::PLAYING) { // Controls
+         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { player.moveUp(); }
+         else { player.stopUp(); }
 
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { player.moveLeft(); }
-			else { player.stopLeft(); }
+         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) { player.moveDown(); }
+         else { player.stopDown(); }
 
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { player.moveRight(); }
-			else { player.stopRight(); }
+         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { player.moveLeft(); }
+         else { player.stopLeft(); }
 
-			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-				if (gameTimeTotal.asMilliseconds() - lastPressed.asMilliseconds() > 1000 / fireRate && bulletsInClip > 0) {
-					bullets[currentBullet].shoot(player.getCenter().x, player.getCenter().y, mouseWorldPosition.x, mouseWorldPosition.y);
+         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { player.moveRight(); }
+         else { player.stopRight(); }
 
-					currentBullet++;
+         if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            if (gameTimeTotal.asMilliseconds() - lastPressed.asMilliseconds() > 1000 / fireRate && bulletsInClip > 0) {
+               bullets[currentBullet].shoot(player.getCenter().x, player.getCenter().y, mouseWorldPosition.x, mouseWorldPosition.y);
 
-					if (currentBullet > 99) { currentBullet = 0; }
-					lastPressed = gameTimeTotal;
+               currentBullet++;
 
-					bulletsInClip--;
-				}
-			}
-		}
+               if (currentBullet > 99) { currentBullet = 0; }
+               lastPressed = gameTimeTotal;
 
-		if (currentState == State::LEVELING_UP) {
-			if (event.key.code == sf::Keyboard::Num1) { currentState = State::PLAYING; }
-			if (event.key.code == sf::Keyboard::Num2) { currentState = State::PLAYING; }
-			if (event.key.code == sf::Keyboard::Num3) { currentState = State::PLAYING; }
-			if (event.key.code == sf::Keyboard::Num4) { currentState = State::PLAYING; }
-			if (event.key.code == sf::Keyboard::Num5) { currentState = State::PLAYING; }
-			if (event.key.code == sf::Keyboard::Num6) { currentState = State::PLAYING; }
+               bulletsInClip--;
+            }
+         }
+      }
 
-			if (currentState == State::PLAYING) {
-				arena.width = 1000;
-				arena.height = 750;
-				arena.left = 0;
-				arena.top = 0;
+      if (currentState == State::LEVELING_UP) {
+         if (event.key.code == sf::Keyboard::Num1) { currentState = State::PLAYING; }
+         if (event.key.code == sf::Keyboard::Num2) { currentState = State::PLAYING; }
+         if (event.key.code == sf::Keyboard::Num3) { currentState = State::PLAYING; }
+         if (event.key.code == sf::Keyboard::Num4) { currentState = State::PLAYING; }
+         if (event.key.code == sf::Keyboard::Num5) { currentState = State::PLAYING; }
+         if (event.key.code == sf::Keyboard::Num6) { currentState = State::PLAYING; }
 
-				int tileSize = createBackground(background, arena);
+         if (currentState == State::PLAYING) {
+            arena.width = 1000;
+            arena.height = 750;
+            arena.left = 0;
+            arena.top = 0;
 
-				player.spawn(arena, resolution, tileSize);
+            int tileSize = createBackground(background, arena);
 
-				numZombies = 10;
+            player.spawn(arena, resolution, tileSize);
 
-				delete[] zombies;
-				zombies = createHorde(numZombies, arena);
-				numZombiesAlive = numZombies;
+            healthPickup.setArena(arena);
+            ammoPickup.setArena(arena);
 
-				clock.restart();
-			}
-		}
+            numZombies = 10;
 
-		if (currentState == State::PLAYING) { // Update the frame
-			sf::Time delta = clock.restart();
+            delete[] zombies;
+            zombies = createHorde(numZombies, arena);
+            numZombiesAlive = numZombies;
 
-			gameTimeTotal += delta;
+            clock.restart();
+         }
+      }
 
-			float deltaAsSeconds = delta.asSeconds();
+      if (currentState == State::PLAYING) { // Update the frame
+         sf::Time delta = clock.restart();
 
-			mouseScreenPosition = sf::Mouse::getPosition();
-			mouseWorldPosition = window.mapPixelToCoords(sf::Mouse::getPosition(), mainView);
-			player.update(deltaAsSeconds, sf::Mouse::getPosition());
+         gameTimeTotal += delta;
 
-			sf::Vector2f playerPosition(player.getCenter());
+         float deltaAsSeconds = delta.asSeconds();
 
-			mainView.setCenter(player.getCenter());
+         mouseScreenPosition = sf::Mouse::getPosition();
+         mouseWorldPosition = window.mapPixelToCoords(sf::Mouse::getPosition(), mainView);
+         spriteCrosshair.setPosition(mouseWorldPosition);
 
-			for (int i = 0; i < numZombies; i++)
-			{
-				if (zombies[i].isAlive()) {
-					zombies[i].update(delta.asSeconds(), playerPosition);
-				}
-			}
+         player.update(deltaAsSeconds, sf::Mouse::getPosition());
 
-			for (int i = 0; i < 100; i++)
-			{
-				if (bullets[i].isInFlight()) { bullets[i].update(deltaAsSeconds); }
-			}
-		}
+         sf::Vector2f playerPosition(player.getCenter());
 
-		if (currentState == State::PLAYING) { // Drawing
-			window.clear();
+         mainView.setCenter(player.getCenter());
 
-			window.setView(mainView);
+         for (int i = 0; i < numZombies; i++)
+         {
+            if (zombies[i].isAlive()) {
+               zombies[i].update(delta.asSeconds(), playerPosition);
+            }
+         }
 
-			window.draw(background, &textureBackground);
+         for (int i = 0; i < 100; i++)
+         {
+            if (bullets[i].isInFlight()) { bullets[i].update(deltaAsSeconds); }
+         }
 
-			for (int i = 0; i < numZombies; i++)
-			{
-				window.draw(zombies[i].getSprite());
-			}
+         healthPickup.update(deltaAsSeconds);
+         ammoPickup.update(deltaAsSeconds);
+      }
 
-			for (int i = 0; i < 100; i++)
-			{
-				if (bullets[i].isInFlight()) { window.draw(bullets[i].getShape()); }
-			}
+      if (currentState == State::PLAYING) { // Drawing
+         window.clear();
 
-			window.draw(player.getSprite());
-		}
+         window.setView(mainView);
 
-		if (currentState == State::LEVELING_UP) {}
-		if (currentState == State::PAUSED) {}
-		if (currentState == State::GAME_OVER) {}
+         window.draw(background, &textureBackground);
 
-		window.display();
-	}
+         for (int i = 0; i < numZombies; i++)
+         {
+            window.draw(zombies[i].getSprite());
+         }
 
-	delete[] zombies;
+         for (int i = 0; i < 100; i++)
+         {
+            if (bullets[i].isInFlight()) { window.draw(bullets[i].getShape()); }
+         }
 
-	return 0;
+         window.draw(player.getSprite());
+
+         if (ammoPickup.isSpawned()) { window.draw(ammoPickup.getSprite()); }
+         if (healthPickup.isSpawned()) { window.draw(healthPickup.getSprite()); }
+
+         window.draw(spriteCrosshair);
+      }
+
+      if (currentState == State::LEVELING_UP) {}
+      if (currentState == State::PAUSED) {}
+      if (currentState == State::GAME_OVER) {}
+
+      window.display();
+   }
+
+   delete[] zombies;
+
+   return 0;
 }
