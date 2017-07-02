@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <sstream> 
 #include "player.h"
 #include "arena.h"
 #include "TextureHolder.h"
@@ -16,10 +17,10 @@ int main()
    State currentState = State::GAME_OVER;
 
    sf::Vector2f resolution;
-   resolution.x = sf::VideoMode::getDesktopMode().width;
-   resolution.y = sf::VideoMode::getDesktopMode().height;
+   resolution.x = 1280;
+   resolution.y = 720;
 
-   sf::RenderWindow window(sf::VideoMode(resolution.x, resolution.y), "Zombie Arena", sf::Style::Fullscreen);
+   sf::RenderWindow window(sf::VideoMode(resolution.x, resolution.y), "Zombie Arena");
 
    sf::View mainView(sf::FloatRect(0, 0, resolution.x, resolution.y));
 
@@ -62,6 +63,90 @@ int main()
 
    int score = 0;
    int highScore = 0;
+
+   sf::Sprite spriteGameOver;
+   sf::Texture textureGameOver = TextureHolder::getTexture("graphics/background1.png");
+   spriteGameOver.setTexture(textureGameOver);
+   spriteGameOver.setPosition(0, 0);
+
+   sf::View hudView(sf::FloatRect(0, 0, resolution.x, resolution.y));
+
+   sf::Sprite spriteAmmoIcon;
+   sf::Texture textureAmmoIcon = TextureHolder::getTexture("graphics/ammo_icon.png");
+   spriteAmmoIcon.setTexture(textureAmmoIcon);
+   spriteAmmoIcon.setPosition(28, 620);
+
+   sf::Font font;
+   font.loadFromFile("fonts/zombiecontrol.ttf");
+
+   sf::Text textPaused;
+   textPaused.setFont(font);
+   textPaused.setCharacterSize(85);
+   textPaused.setFillColor(sf::Color::White);
+   textPaused.setPosition(350, 200);
+   textPaused.setString("Press Enter \nto continue");
+
+   sf::Text textGameOver;
+   textGameOver.setFont(font);
+   textGameOver.setCharacterSize(80);
+   textGameOver.setFillColor(sf::Color::White);
+   textGameOver.setPosition(280, 540);
+   textGameOver.setString("Press Enter to restart");
+
+   sf::Text textLevelUp;
+   textLevelUp.setFont(font);
+   textLevelUp.setCharacterSize(60);
+   textLevelUp.setFillColor(sf::Color::White);
+   textLevelUp.setPosition(80, 150);
+   std::stringstream levelupStream;
+   levelupStream <<
+      "1- Increase rate of fire" <<
+      "\n2- Increase clip size (next reload)" <<
+      "\n3- Increase max health" <<
+      "\n4- Increase run speed" <<
+      "\n5- More and better health supplies" <<
+      "\n6- More and better ammo supplies";
+   textLevelUp.setString(levelupStream.str());
+
+   sf::Text textAmmo;
+   textAmmo.setFont(font);
+   textAmmo.setCharacterSize(50);
+   textAmmo.setFillColor(sf::Color::White);
+   textAmmo.setPosition(116, 620);
+
+   sf::Text textScore;
+   textScore.setFont(font);
+   textScore.setCharacterSize(50);
+   textScore.setFillColor(sf::Color::White);
+   textScore.setPosition(20, 0);
+
+   sf::Text textHiScore;
+   textScore.setFont(font);
+   textScore.setCharacterSize(50);
+   textScore.setFillColor(sf::Color::White);
+   textScore.setPosition(980, 0);
+   std::stringstream hiScoreStream;
+   hiScoreStream << "Hiscore:" << highScore;
+   textHiScore.setString(hiScoreStream.str());
+
+   sf::Text textZombiesRemaning;
+   textZombiesRemaning.setFont(font);
+   textZombiesRemaning.setCharacterSize(50);
+   textZombiesRemaning.setFillColor(sf::Color::White);
+   textZombiesRemaning.setPosition(975, 620);
+   textZombiesRemaning.setString("Zombies: 100");
+
+   int wave = 0;
+   sf::Text textWaveNumber;
+   textWaveNumber.setFont(font);
+   textWaveNumber.setCharacterSize(50);
+   textWaveNumber.setFillColor(sf::Color::White);
+   textWaveNumber.setPosition(750, 620);
+   textWaveNumber.setString("Wave: 0");
+
+   sf::RectangleShape healthBar;
+   healthBar.setFillColor(sf::Color::Red);
+   healthBar.setPosition(300, 620);
 
    while (window.isOpen())
    {
