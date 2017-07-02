@@ -148,6 +148,9 @@ int main()
    healthBar.setFillColor(sf::Color::Red);
    healthBar.setPosition(300, 620);
 
+   int frameSinceLastHudUpdate = 0;
+   int fpsMeasurementFrameInterval = 1000;
+
    while (window.isOpen())
    {
       sf::Event event;
@@ -315,6 +318,35 @@ int main()
 
          if (player.getPosition().intersects(ammoPickup.getPosition()) && ammoPickup.isSpawned()) {
             bulletsSpare += ammoPickup.gotIt();
+         }
+
+         healthBar.setSize(sf::Vector2f(player.getHealth() * 3, 70));
+
+         frameSinceLastHudUpdate++;
+
+         if (frameSinceLastHudUpdate > fpsMeasurementFrameInterval) {
+            std::stringstream ssAmmo;
+            std::stringstream ssScore;
+            std::stringstream ssHiScore;
+            std::stringstream ssWave;
+            std::stringstream ssZombiesAlive;
+
+            ssAmmo << bulletsInClip << "/" << bulletsSpare;
+            textAmmo.setString(ssAmmo.str());
+
+            ssScore << "Score:" << score;
+            textScore.setString(ssScore.str());
+
+            ssHiScore << "Hiscore:" << highScore;
+            textHiScore.setString(ssHiScore.str());
+
+            ssWave << "Wave:" << wave;
+            textWaveNumber.setString(ssWave.str());
+
+            ssZombiesAlive << "Zombies:" << numZombiesAlive;
+            textZombiesRemaning.setString(ssZombiesAlive.str());
+
+            frameSinceLastHudUpdate = 0;
          }
       }
 
