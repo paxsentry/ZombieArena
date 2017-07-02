@@ -34,9 +34,9 @@ void Player::resetPlayerStats()
 
 bool Player::hit(sf::Time timeHit)
 {
-	if (timeHit.asMicroseconds() - m_lastHit.asMilliseconds() > 200) {
+	if (timeHit.asMilliseconds() - m_lastHit.asMilliseconds() > 200) {
 		m_lastHit = timeHit;
-		m_health -= 10;
+		m_health -= 1;
 		return true;
 	}
 	return false;

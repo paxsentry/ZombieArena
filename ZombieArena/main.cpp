@@ -17,8 +17,8 @@ int main()
    State currentState = State::GAME_OVER;
 
    sf::Vector2f resolution;
-   resolution.x = 1280;
-   resolution.y = 720;
+   resolution.x = 1920;
+   resolution.y = 1080;
 
    sf::RenderWindow window(sf::VideoMode(resolution.x, resolution.y), "Zombie Arena");
 
@@ -65,7 +65,7 @@ int main()
    int highScore = 0;
 
    sf::Sprite spriteGameOver;
-   sf::Texture textureGameOver = TextureHolder::getTexture("graphics/background1.png");
+   sf::Texture textureGameOver = TextureHolder::getTexture("graphics/background.png");
    spriteGameOver.setTexture(textureGameOver);
    spriteGameOver.setPosition(0, 0);
 
@@ -74,7 +74,7 @@ int main()
    sf::Sprite spriteAmmoIcon;
    sf::Texture textureAmmoIcon = TextureHolder::getTexture("graphics/ammo_icon.png");
    spriteAmmoIcon.setTexture(textureAmmoIcon);
-   spriteAmmoIcon.setPosition(28, 620);
+   spriteAmmoIcon.setPosition(20, 980);
 
    sf::Font font;
    font.loadFromFile("fonts/zombiecontrol.ttf");
@@ -83,21 +83,21 @@ int main()
    textPaused.setFont(font);
    textPaused.setCharacterSize(85);
    textPaused.setFillColor(sf::Color::White);
-   textPaused.setPosition(350, 200);
+   textPaused.setPosition(400, 400);
    textPaused.setString("Press Enter \nto continue");
 
    sf::Text textGameOver;
    textGameOver.setFont(font);
    textGameOver.setCharacterSize(80);
    textGameOver.setFillColor(sf::Color::White);
-   textGameOver.setPosition(280, 540);
-   textGameOver.setString("Press Enter to restart");
+   textGameOver.setPosition(250, 850);
+   textGameOver.setString("Press Enter to play");
 
    sf::Text textLevelUp;
    textLevelUp.setFont(font);
    textLevelUp.setCharacterSize(60);
    textLevelUp.setFillColor(sf::Color::White);
-   textLevelUp.setPosition(80, 150);
+   textLevelUp.setPosition(150, 250);
    std::stringstream levelupStream;
    levelupStream <<
       "1- Increase rate of fire" <<
@@ -112,7 +112,7 @@ int main()
    textAmmo.setFont(font);
    textAmmo.setCharacterSize(50);
    textAmmo.setFillColor(sf::Color::White);
-   textAmmo.setPosition(116, 620);
+   textAmmo.setPosition(200, 980);
 
    sf::Text textScore;
    textScore.setFont(font);
@@ -124,7 +124,7 @@ int main()
    textScore.setFont(font);
    textScore.setCharacterSize(50);
    textScore.setFillColor(sf::Color::White);
-   textScore.setPosition(980, 0);
+   textScore.setPosition(1400, 0);
    std::stringstream hiScoreStream;
    hiScoreStream << "Hiscore:" << highScore;
    textHiScore.setString(hiScoreStream.str());
@@ -133,7 +133,7 @@ int main()
    textZombiesRemaning.setFont(font);
    textZombiesRemaning.setCharacterSize(50);
    textZombiesRemaning.setFillColor(sf::Color::White);
-   textZombiesRemaning.setPosition(975, 620);
+   textZombiesRemaning.setPosition(1500, 980);
    textZombiesRemaning.setString("Zombies: 100");
 
    int wave = 0;
@@ -141,12 +141,12 @@ int main()
    textWaveNumber.setFont(font);
    textWaveNumber.setCharacterSize(50);
    textWaveNumber.setFillColor(sf::Color::White);
-   textWaveNumber.setPosition(750, 620);
+   textWaveNumber.setPosition(1250, 980);
    textWaveNumber.setString("Wave: 0");
 
    sf::RectangleShape healthBar;
    healthBar.setFillColor(sf::Color::Red);
-   healthBar.setPosition(300, 620);
+   healthBar.setPosition(450, 980);
 
    int frameSinceLastHudUpdate = 0;
    int fpsMeasurementFrameInterval = 1000;
@@ -225,8 +225,8 @@ int main()
          if (event.key.code == sf::Keyboard::Num6) { currentState = State::PLAYING; }
 
          if (currentState == State::PLAYING) {
-            arena.width = 1000;
-            arena.height = 750;
+            arena.width = 500;
+            arena.height = 500;
             arena.left = 0;
             arena.top = 0;
 
@@ -373,11 +373,33 @@ int main()
          if (healthPickup.isSpawned()) { window.draw(healthPickup.getSprite()); }
 
          window.draw(spriteCrosshair);
+
+         window.setView(hudView);
+
+         window.draw(spriteAmmoIcon);
+         window.draw(textAmmo);
+         window.draw(textScore);
+         window.draw(textHiScore);
+         window.draw(healthBar);
+         window.draw(textWaveNumber);
+         window.draw(textZombiesRemaning);
       }
 
-      if (currentState == State::LEVELING_UP) {}
-      if (currentState == State::PAUSED) {}
-      if (currentState == State::GAME_OVER) {}
+      if (currentState == State::LEVELING_UP) {
+         window.draw(spriteGameOver);
+         window.draw(textLevelUp);
+      }
+
+      if (currentState == State::PAUSED) {
+         window.draw(textPaused);
+      }
+
+      if (currentState == State::GAME_OVER) {
+         window.draw(spriteGameOver);
+         window.draw(textGameOver);
+         window.draw(textScore);
+         window.draw(textHiScore);
+      }
 
       window.display();
    }
