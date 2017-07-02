@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
-#include <sstream> 
+#include <sstream>
+#include <fstream>
 #include "player.h"
 #include "arena.h"
 #include "TextureHolder.h"
@@ -120,11 +121,17 @@ int main()
    textScore.setFillColor(sf::Color::White);
    textScore.setPosition(20, 0);
 
+   std::ifstream inputFile("gamedata/scores.txt");
+   if (inputFile.is_open()) {
+      inputFile >> highScore;
+      inputFile.close();
+   }
+
    sf::Text textHiScore;
-   textScore.setFont(font);
-   textScore.setCharacterSize(50);
-   textScore.setFillColor(sf::Color::White);
-   textScore.setPosition(1400, 0);
+   textHiScore.setFont(font);
+   textHiScore.setCharacterSize(50);
+   textHiScore.setFillColor(sf::Color::White);
+   textHiScore.setPosition(1400, 0);
    std::stringstream hiScoreStream;
    hiScoreStream << "Hiscore:" << highScore;
    textHiScore.setString(hiScoreStream.str());
@@ -225,8 +232,8 @@ int main()
          if (event.key.code == sf::Keyboard::Num6) { currentState = State::PLAYING; }
 
          if (currentState == State::PLAYING) {
-            arena.width = 500;
-            arena.height = 500;
+            arena.width = 700;
+            arena.height = 700;
             arena.left = 0;
             arena.top = 0;
 
@@ -307,7 +314,12 @@ int main()
 
                if (player.hit(gameTimeTotal)) {}
 
-               if (player.getHealth() <= 0) { currentState = State::GAME_OVER; }
+               if (player.getHealth() <= 0) {
+                  currentState = State::GAME_OVER;
+                  std::ofstream outputFile("gamedata/scores.txt");
+                  outputFile << highScore;
+                  outputFile.close();
+               }
             }
          }
 
