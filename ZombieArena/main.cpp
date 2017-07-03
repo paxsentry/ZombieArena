@@ -210,6 +210,16 @@ int main()
             }
             else if (event.key.code == sf::Keyboard::Return && currentState == State::GAME_OVER) {
                currentState = State::LEVELING_UP;
+               wave = 0;
+               score = 0;
+
+               currentBullet = 0;
+               bulletsSpare = 24;
+               bulletsInClip = 6;
+               clipSize = 6;
+               fireRate = 1;
+
+               player.resetPlayerStats();
             }
 
             if (currentState == State::PLAYING) {
@@ -217,13 +227,15 @@ int main()
                   if (bulletsSpare >= clipSize) {
                      bulletsInClip = clipSize;
                      bulletsSpare -= clipSize;
+                     reload.play();
                   }
                   else if (bulletsSpare > 0) {
                      bulletsInClip = bulletsSpare;
                      bulletsSpare = 0;
+                     reload.play();
                   }
                   else {
-
+                     reloadFail.play();
                   }
                }
             }
@@ -254,6 +266,7 @@ int main()
                if (currentBullet > 99) { currentBullet = 0; }
                lastPressed = gameTimeTotal;
 
+               shoot.play();
                bulletsInClip--;
             }
          }
@@ -343,6 +356,7 @@ int main()
 
                         if (numZombiesAlive == 0) { currentState = State::LEVELING_UP; }
                      }
+                     splat.play();
                   }
                }
             }
@@ -352,7 +366,7 @@ int main()
          {
             if (player.getPosition().intersects(zombies[i].getPosition()) && zombies[i].isAlive()) {
 
-               if (player.hit(gameTimeTotal)) {}
+               if (player.hit(gameTimeTotal)) { hit.play(); }
 
                if (player.getHealth() <= 0) {
                   currentState = State::GAME_OVER;
@@ -366,10 +380,12 @@ int main()
          // Player and pickup collision detection
          if (player.getPosition().intersects(healthPickup.getPosition()) && healthPickup.isSpawned()) {
             player.increaseHealthLevel(healthPickup.gotIt());
+            pickup.play();
          }
 
          if (player.getPosition().intersects(ammoPickup.getPosition()) && ammoPickup.isSpawned()) {
             bulletsSpare += ammoPickup.gotIt();
+            pickup.play();
          }
 
          healthBar.setSize(sf::Vector2f(player.getHealth() * 3, 70));
